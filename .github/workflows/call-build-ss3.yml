@@ -8,4 +8,4 @@ on:
   workflow_dispatch:
 jobs:
   call-workflow:
-    uses: nmfs-stock-synthesis/workflows/.github/workflows/build-ss3.yml@main
+    uses: nmfs-stock-synthesis/workflows/.github/workflows/build-ss3.yml@update_workflows
