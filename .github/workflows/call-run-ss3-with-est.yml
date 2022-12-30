@@ -14,4 +14,4 @@ on:
       - main
 jobs:
   call-workflow:
-    uses: nmfs-stock-synthesis/workflows/.github/workflows/run-ss3-with-est.yml@main
+    uses: nmfs-stock-synthesis/workflows/.github/workflows/run-ss3-with-est.yml@admb-13.1-test

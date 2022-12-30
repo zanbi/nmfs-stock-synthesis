@@ -14,4 +14,4 @@ on:
       - main
 jobs:
   call-workflow:
-    uses: nmfs-stock-synthesis/workflows/.github/workflows/test-r4ss-with-ss3.yml@main
+    uses: nmfs-stock-synthesis/workflows/.github/workflows/test-r4ss-with-ss3.yml@admb-13.1-test

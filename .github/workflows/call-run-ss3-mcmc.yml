@@ -15,4 +15,4 @@ on:
       - main
 jobs:
   call-workflow:
-    uses: nmfs-stock-synthesis/workflows/.github/workflows/run-ss3-mcmc.yml@main
+    uses: nmfs-stock-synthesis/workflows/.github/workflows/run-ss3-mcmc.yml@admb-13.1-test
