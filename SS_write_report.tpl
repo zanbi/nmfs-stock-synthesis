@@ -3816,7 +3816,7 @@ FUNCTION void write_bigoutput()
     if (Grow_logN == 1)
       SS2out << " #Lognormal ";
     SS2out << "#" << endl; // SS_Label_460
-    SS2out << " sdratio " << sd_ratio << endl;
+    SS2out << " sdratio " << platoon_sd_ratio << endl;
     SS2out << " sdwithin " << sd_within_platoon << endl;
     SS2out << " sdbetween " << sd_between_platoon << endl;
     for (s = 1; s <= nseas; s++)
@@ -3978,7 +3978,9 @@ FUNCTION void write_bigoutput()
             }
           }
 
-          for (gg = 1; gg <= gender ; gg ++)
+          int gender2 = gender;
+          if (gen_l(f, i) == 0) gender2 = 1;
+          for (gg = 1; gg <= gender2 ; gg ++)
           {
             if (gen_l(f, i) != 2 && gg == 1)
             {
@@ -4086,7 +4088,9 @@ FUNCTION void write_bigoutput()
             }
           }
 
-          for (gg = 1; gg <= gender ; gg ++)
+          int gender2 = gender;
+          if (gen_a(f, i) == 0) gender2 = 1;
+          for (gg = 1; gg <= gender2 ; gg ++)
           {
             if (gen_a(f, i) != 2 && gg == 1)
             {

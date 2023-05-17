@@ -56,12 +56,16 @@
 !!echoinput<<N_GP<<" N growth patterns "<<endl;
   init_int N_platoon  //  number of platoons  1, 3, 5 are best values to use
 !!echoinput<<N_platoon<<"  N platoons (1, 3 or 5)"<<endl;
-  number sd_ratio;  // ratio of stddev within platoon to between morphs
-  number sd_within_platoon
-  number sd_between_platoon
-  ivector ishadow(1,N_platoon)
-  vector shadow(1,N_platoon)
+
+  number sd_ratio_rd;  // ratio of stddev within platoon to between morphs from file
+  number platoon_sd_ratio;  // ratio of stddev within platoon to between morphs
+  number sd_within_platoon;
+  number sd_between_platoon;
+
+  ivector ishadow(1,N_platoon);
+  vector shadow(1,N_platoon);
   vector platoon_distr(1,N_platoon);
+
  LOCAL_CALCS
   // clang-format on
   if (WTage_rd > 0)
@@ -82,14 +86,14 @@
   
   if (N_platoon > 1)
   {
-    *(ad_comm::global_datafile) >> sd_ratio;
+    *(ad_comm::global_datafile) >> sd_ratio_rd;
     *(ad_comm::global_datafile) >> platoon_distr;
-    echoinput << sd_ratio << "  sd_ratio" << endl;
+    echoinput << sd_ratio_rd << "  sd_ratio_rd" << endl;
     echoinput << platoon_distr << "  platoon_distr" << endl;
   }
   else
   {
-    sd_ratio = 1.;
+    sd_ratio_rd = 1.;
     platoon_distr(1) = 1.;
     echoinput << "  do not read sd_ratio or platoon_distr" << endl;
   }
@@ -110,16 +114,26 @@
     }
   }
   platoon_distr /= sum(platoon_distr);
-  
-  if (N_platoon > 1)
+  // calculate stdev values
+  if (sd_ratio_rd < 0)
   {
-    sd_within_platoon = sd_ratio * sqrt(1. / (1. + sd_ratio * sd_ratio));
-    sd_between_platoon = sqrt(1. / (1. + sd_ratio * sd_ratio));
+    platoon_sd_ratio = -sd_ratio_rd;
+    warnstream << "sd_ratio read is < 0, so expecting sd parameter after movement params.";
+    write_message (NOTE, 1);
   }
   else
   {
-    sd_within_platoon = 1;
+    platoon_sd_ratio = sd_ratio_rd;
+  }
+  if (N_platoon > 1)
+  {
+    sd_between_platoon = sqrt(1. / (1. + platoon_sd_ratio * platoon_sd_ratio));
+    sd_within_platoon = platoon_sd_ratio * sd_between_platoon;
+  }
+  else
+  {
     sd_between_platoon = 0.000001;
+    sd_within_platoon = 1;
   }
   
   if (N_platoon == 1)
@@ -139,7 +153,7 @@
   }
   else
   {
-    warnstream << "illegal N platoons: " << N_platoon << ", must be 1, 3 or 5 " ;
+    warnstream << "illegal N platoons: " << N_platoon << "; must be 1, 3 or 5 " ;
     write_message (FATAL, 1); // EXIT!
   }
   // clang-format off
@@ -1155,7 +1169,8 @@
   int do_once;
   int doit;
 
-  int MGP_CGD
+  int MGP_CGD;
+  int sd_ratio_param_ptr;
   int CGD_onoff;  //  switch for cohort growth dev
 
  LOCAL_CALCS
@@ -1451,6 +1466,13 @@
     }
   }
   
+  if (N_platoon > 1 && sd_ratio_rd < 0)
+  {
+    ParCount ++;
+    sd_ratio_param_ptr = ParCount;
+    ParmLabel += "Platoon_SD_Ratio";
+  }
+  
   if (Use_AgeKeyZero > 0)
   {
     AgeKeyParm = ParCount + 1;
@@ -1590,6 +1612,7 @@
   if (recr_dist_method < 4) mgp_type(Ip, MGP_CGD - 1) = 4; // recruit apportionments
   mgp_type(MGP_CGD) = 2; // cohort growth dev
   if (do_migration > 0) mgp_type(MGP_CGD + 1, N_MGparm) = 5; // note that it fills until end of MGparm list, but some get overwritten
+  if (N_platoon > 1 && sd_ratio_rd < 0) mgp_type(sd_ratio_param_ptr) = 2;
   if (Use_AgeKeyZero > 0) mgp_type(AgeKeyParm, N_MGparm) = 6;
   if (catch_mult_pointer > 0) mgp_type(catch_mult_pointer, N_MGparm) = 7;
   for (f = frac_female_pointer; f <= frac_female_pointer + N_GP - 1; f++) mgp_type(f) = 4;
@@ -1627,7 +1650,7 @@
 //  timevary_setup(6)=env link type
 //  timevary_setup(7)=env variable
 //  timevary_setup(8)=dev vector used
-//  timevary_setup(9)=dev link type
+//  timevary_setup(9)=dev link type  used in SS_timevarmparm
 //  timevary_setup(10)=dev min year
 //  timevary_setup(11)=dev maxyear
 //  timevary_setup(12)=dev phase
@@ -4487,6 +4510,10 @@
   // clang-format off
  END_CALCS
 
+!!// SS_Label_Info_4.9.xx #Create arrays needed for timevary_parameters
+  vector baseparm_min(1,timevary_parm_cnt)
+  vector baseparm_max(1,timevary_parm_cnt)
+
 !!//  SS_Label_Info_4.9.9 #Create arrays for the total set of selex parameters
   vector selparm_LO(1,N_selparm2)
   vector selparm_HI(1,N_selparm2)
@@ -4785,7 +4812,7 @@
 
    ivector parm_dev_type(1,N_parm_dev);  //  distinguish parameter dev vectors from 2DAR devs
    ivector parm_dev_use_rho(1,N_parm_dev);  //  uses rho parameter, or not
-   ivector parm_dev_info(1,N_parm_dev);  //  pointer from list of devvectorsto 2DAR list
+   ivector parm_dev_info(1,N_parm_dev);  //  pointer from list of devvectors to 2DAR list
    ivector TwoD_AR_ymin(1,TwoD_AR_cnt)
    ivector TwoD_AR_ymax(1,TwoD_AR_cnt)
    ivector TwoD_AR_amin(1,TwoD_AR_cnt)
@@ -4813,7 +4840,8 @@
         echoinput << " dev vector #:  " << k << " setup: " << timevary_setup << " phase: " << parm_dev_PH(k) << endl;
         f = timevary_setup(13); //  index of base parameter
         int picker = timevary_setup(9);
-        parm_dev_type(k) = 1; //  so P'=P+dev*se with objfun using  -log(1)
+        parm_dev_type(k) = 1; //  so P'=P+dev*se with objfun using  -log(1); so expects se of devs to be approx unit normal
+                              //  parm_dev_type is used in SS_objfunc.tpl
         if (picker > 20)
         {
           picker -= 20;
@@ -4828,7 +4856,7 @@
         }
         if (picker > 10)
         {
-          parm_dev_type(k) = 3; // use objfun using -log(se) to match 3.30.12 and earlier
+          parm_dev_type(k) = 3; // P'=P+dev; objfun using -log(se) to match 3.30.12 and earlier
           picker -= 10;
         }
         if (picker == 6) parm_dev_type(k) = 4; //  add penalty to keep rmse near 1. Needs to estimate stddev factor
@@ -4837,6 +4865,7 @@
         timevary_def[j](9) = picker; //  save in array also
   
         parm_dev_use_rho(k) = 0;
+        // require rho to be used for some dev approaches
         if (picker == 4 || picker == 5 || picker == 6) parm_dev_use_rho(k) = 1;
         for (y = parm_dev_minyr(k); y <= parm_dev_maxyr(k); y++)
         {
@@ -6595,6 +6624,11 @@
       sprintf(onenum, "%d", y);
       ParmLabel += "Dyn_Bzero_" + onenum + CRLF(1);
     }
+  }
+  else if (depletion_basis_rd == 5)
+  {
+    warnstream << "must select dyn_bzero in control file extra_std for it to be used as depletion denominator ";
+    write_message (FATAL, 0); // EXIT!
   }
   if (More_Std_Input(12) == 2)
   {

@@ -311,7 +311,7 @@ PARAMETER_SECTION
 
 !!//  SS_Label_Info_5.1.3 #Create M, F, and Z parameters and associated arrays and constants
   init_bounded_number_vector init_F(1,N_init_F,init_F_LO,init_F_HI,init_F_PH)
-  matrix est_equ_catch(1,nseas,1,Nfleet)
+//  matrix est_equ_catch(1,nseas,1,Nfleet)
 
 //  natural, predation and fishing mortality
   matrix natMparms(1,N_natMparms,1,N_GP*gender)  // will be derived from the MGparms
@@ -482,7 +482,7 @@ PARAMETER_SECTION
   matrix parm_dev_rwalk(1,N_parm_dev,parm_dev_minyr,parm_dev_maxyr);
 
   init_bounded_number checksum999(998,1000,-999)  //  set value to 999 to check reading of ss.par
-  vector timevary_parm(1,timevary_parm_cnt);  //  will map to the MGparms and selparms that are the actual parameters
+  vector timevary_parm(1,timevary_parm_cnt);  //  holds the link parameters; in SS_timevaryparm these are set to actual parms in MGparms, SRparms, Qparms, selparms
   matrix parm_timevary(1,timevary_cnt,styr-1,YrMax);  //  time series of adjusted parm values for block and trend
 
  LOCAL_CALCS
@@ -575,7 +575,7 @@ PARAMETER_SECTION
   number equ_Recr
   number equ_F_std
   number equ_M_std
-
+  
 !!//  SS_Label_Info_5.1.8 #Create matrix called smry to store derived quantities of interest
   matrix Smry_Table(styr-3,YrMax,1,20+2*gmorph);
   // 1=totbio, 2=smrybio, 3=smrynum, 4=enc_catch, 5=dead_catch, 6=ret_catch, 7=spbio, 8=recruit,

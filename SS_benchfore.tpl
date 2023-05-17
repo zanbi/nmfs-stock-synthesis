@@ -2207,7 +2207,6 @@ FUNCTION void Get_Forecast()
       }
       env_data(y, -3) = log(smrybio / Smry_Table(styr - 1, 2));
       env_data(y, -4) = log(smrynum / Smry_Table(styr - 1, 3));
-
       Smry_Table(y).initialize();
       Smry_Table(y, 2) = smrybio; // in forecast
       Smry_Table(y, 3) = smrynum; //sums to accumulate across platoons and settlements
@@ -2459,7 +2458,7 @@ FUNCTION void Get_Forecast()
             }
 
             Recruits = Spawn_Recr(SSB_use, R0_use, SSB_current); // calls to function Spawn_Recr
-            apply_recdev(Recruits, R0_use); //  apply recruitment deviation
+            if (SR_fxn != 7) apply_recdev(Recruits, R0_use); //  apply recruitment deviation
             if (Fcast_Loop1 < Fcast_Loop_Control(2)) //  use expected recruitment  this should include environ effect - CHECK THIS
             {
               Recruits = exp_rec(y, 2);
@@ -3086,7 +3085,7 @@ FUNCTION void Get_Forecast()
             }
 
             Recruits = Spawn_Recr(SSB_use, R0_use, SSB_current); // calls to function Spawn_Recr
-            apply_recdev(Recruits, R0_use); //  apply recruitment deviation
+            if (SR_fxn != 7) apply_recdev(Recruits, R0_use); //  apply recruitment deviation
             // distribute Recruitment  among the settlements, areas and morphs
             for (g = 1; g <= gmorph; g++)
               if (use_morph(g) > 0)

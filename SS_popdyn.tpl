@@ -556,6 +556,7 @@ FUNCTION void get_initial_conditions()
   env_data(styr - 1, -3) = 0.0;
   env_data(styr - 1, -4) = 0.0;
 
+  /*
   // save est_equ_catch which has units (biomass vs numbers) according to that fleet; used in objfun
   for (s = 1; s <= nseas; s++)
     for (int ff = 1; ff <= N_catchfleets(0); ff++)
@@ -570,8 +571,8 @@ FUNCTION void get_initial_conditions()
         est_equ_catch(s, f) = equ_catch_fleet(5, s, f);
       }
     }
-
-  if (save_for_report > 0)
+  */
+//  if (save_for_report > 0)
   {
     for (s = 1; s <= nseas; s++)
     {
@@ -596,7 +597,6 @@ FUNCTION void get_initial_conditions()
         {
           catch_fleet(t, f, g) = equ_catch_fleet(g, s, f);
         }
-        warning<<catch_fleet(t, f)<<endl;
         for (g = 1; g <= gmorph; g++)
         {
           catage(t, f, g) = equ_catage(s, f, g);
@@ -1039,7 +1039,7 @@ FUNCTION void get_time_series()
           SSB_use = SSB_equil;
         }
         Recruits = Spawn_Recr(SSB_use, R0_use, SSB_current); // calls to function Spawn_Recr
-        apply_recdev(Recruits, R0_use); //  apply recruitment deviation
+        if (SR_fxn != 7) apply_recdev(Recruits, R0_use); //  apply recruitment deviation
         // distribute Recruitment of age 0 fish among the current and future settlements; and among areas and morphs
         //  use t offset for each birth event:  Settlement_offset(settle)
         //  so the total number of Recruits will be relative to their numbers at the time of the set of settlement_events.
@@ -1481,7 +1481,7 @@ FUNCTION void get_time_series()
         }
 
         Recruits = Spawn_Recr(SSB_use, R0_use, SSB_current); // calls to function Spawn_Recr
-        apply_recdev(Recruits, R0_use); //  apply recruitment deviation
+        if (SR_fxn != 7) apply_recdev(Recruits, R0_use); //  apply recruitment deviation
 
         // distribute Recruitment among settlements, areas and morphs
         //  note that because SSB_current is calculated at end of season to take into account Z,

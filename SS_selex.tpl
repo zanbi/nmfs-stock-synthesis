@@ -50,6 +50,7 @@ FUNCTION void get_selectivity()
           else //  time-varying
           {
             sp(j) = parm_timevary(selparm_timevary(Ip + j), y);
+
             if (parm_adjust_method == 1 && (save_for_report > 0 || do_once == 1))
             {
               if (sp(j) > -999 && (sp(j) < selparm_1(Ip + j, 1) || sp(j) > selparm_1(Ip + j, 2)))
@@ -1919,7 +1920,6 @@ FUNCTION void Make_FishSelex()
   //  4darray sel_dead_bio(1,nseas,1,gmorph,1,Nfleet,0,nages);  // sel * (retain + (1-retain)*discmort) * wt
 
   ALK_idx = (s - 1) * N_subseas + mid_subseas; //for midseason
-  int ALK_finder = (ALK_idx - 1) * gmorph + g;
   dvar_matrix ALK_w = ALK(ALK_idx, g); //  shallow copy
   dvar_vector sel_l_r_w(1, nlength); //  temp vector for retained contribution to weight-at-age
   dvar_vector disc_wt(1, nlength);

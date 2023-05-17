@@ -31,8 +31,6 @@ FUNCTION void Get_expected_values(const int y, const int t);
           for (g = 1; g <= gmorph; g++)
             if (use_morph(g) > 0)
             {
-              int ALK_finder = (ALK_idx - 1) * gmorph + g;
-
               gg = sx(g);
               if (gg == 2)
               {
@@ -334,7 +332,7 @@ FUNCTION void Get_expected_values(const int y, const int t);
                     }
                     break;
                   }
-                  case 31: // recruitment deviation  #31
+                  case 31: // exp(recruitment deviation)  #31
                   {
                     if (y >= recdev_start && y <= recdev_end)
                     {
@@ -343,6 +341,18 @@ FUNCTION void Get_expected_values(const int y, const int t);
                     else
                     {
                       vbio = 1.0;
+                    }
+                    break;
+                  }
+                  case 36: // recruitment deviation  #36
+                  {
+                    if (y >= recdev_start && y <= recdev_end)
+                    {
+                      vbio = recdev(y);
+                    }
+                    else
+                    {
+                      vbio = 0.0;
                     }
                     break;
                   }

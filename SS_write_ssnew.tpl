@@ -143,10 +143,11 @@ FUNCTION void write_nudata()
       report1 << "-9999 0 0 0 0" << endl
               << "#" << endl;
 
-      report1 << " #_CPUE_and_surveyabundance_observations" << endl;
-      report1 << "#_Units:  0=numbers; 1=biomass; 2=F; 30=spawnbio; 31=recdev; 32=spawnbio*recdev; 33=recruitment; 34=depletion(&see Qsetup); 35=parm_dev(&see Qsetup)" << endl;
+      report1 << "#_CPUE_and_surveyabundance_and_index_observations" << endl;
+      report1 << "#_Units: 0=numbers; 1=biomass; 2=F; 30=spawnbio; 31=exp(recdev); 36=recdev; 32=spawnbio*recdev; 33=recruitment; 34=depletion(&see Qsetup); 35=parm_dev(&see Qsetup)" << endl;
       report1 << "#_Errtype:  -1=normal; 0=lognormal; >0=T" << endl;
       report1 << "#_SD_Report: 0=no sdreport; 1=enable sdreport" << endl;
+      report1 << "#_note that link functions are specified in Q_setup section of control file" << endl;
       report1 << "#_Fleet Units Errtype SD_Report" << endl;
       for (f = 1; f <= Nfleet; f++)
         report1 << f << " " << Svy_units(f) << " " << Svy_errtype(f) << " " << Svy_sdreport(f) << " # " << fleetname(f) << endl;
@@ -488,12 +489,10 @@ FUNCTION void write_nudata()
               k++;
               t = styr + (y - styr) * nseas + s - 1;
               if (y == styr - 1)
-              {
-                report1 << -999 << " " << s << " " << f << " " << est_equ_catch(s, f) << " " << catch_se(t, f) << endl;
-              }
+              { report1 << -999 << " "; }
               else
-              {
-                report1 << y << " " << s << " " << f << " ";
+              { report1 << y << " "; }
+              report1 << s << " " << f << " ";
                 if (fleet_type(f) == 2 && catch_ret_obs(f, t) > 0.0)
                 {
                   report1 << 0.1 << " " << catch_se(t, f) << endl; //  for bycatch only fleet
@@ -506,7 +505,6 @@ FUNCTION void write_nudata()
                 {
                   report1 << catch_fleet(t, f, 6) << " " << catch_se(t, f) << endl;
                 }
-              }
             }
           }
         }
@@ -895,28 +893,23 @@ FUNCTION void write_nudata()
               k++;
               t = styr + (y - styr) * nseas + s - 1;
               if (y == styr - 1)
+              { report1 << -999 << " "; }
+              else
+              { report1 << y << " "; }
+              report1 << s << " " << f << " ";
+              if (fleet_type(f) == 2 && catch_ret_obs(f, t) > 0.0)
               {
-                report1 << -999 << " " << s << " " << f << " "
-                        << est_equ_catch(s, f) * mfexp(randn(radm) * catch_se(styr - 1, f) - 0.5 * catch_se(styr - 1, f) * catch_se(styr - 1, f))
+                report1 << 0.1 << " " << catch_se(t, f) << endl; //  for bycatch only fleet
+              }
+              else if (catchunits(f) == 1)
+              {
+                report1 << catch_fleet(t, f, 3) * mfexp(randn(radm) * catch_se(t, f) - 0.5 * catch_se(t, f) * catch_se(t, f))
                         << " " << catch_se(t, f) << endl;
               }
               else
               {
-                report1 << y << " " << s << " " << f << " ";
-                if (fleet_type(f) == 2 && catch_ret_obs(f, t) > 0.0)
-                {
-                  report1 << 0.1 << " " << catch_se(t, f) << endl; //  for bycatch only fleet
-                }
-                else if (catchunits(f) == 1)
-                {
-                  report1 << catch_fleet(t, f, 3) * mfexp(randn(radm) * catch_se(t, f) - 0.5 * catch_se(t, f) * catch_se(t, f))
-                          << " " << catch_se(t, f) << endl;
-                }
-                else
-                {
-                  report1 << catch_fleet(t, f, 6) * mfexp(randn(radm) * catch_se(t, f) - 0.5 * catch_se(t, f) * catch_se(t, f))
-                          << " " << catch_se(t, f) << endl;
-                }
+                report1 << catch_fleet(t, f, 6) * mfexp(randn(radm) * catch_se(t, f) - 0.5 * catch_se(t, f) * catch_se(t, f))
+                        << " " << catch_se(t, f) << endl;
               }
             }
           }
@@ -1704,7 +1697,10 @@ FUNCTION void write_nucontrol()
   report4 << N_platoon << " #_N_platoons_Within_GrowthPattern " << endl;
   if (N_platoon == 1)
     report4 << "#_Cond ";
-  report4 << sd_ratio << " #_Platoon_within/between_stdev_ratio (no read if N_platoons=1)" << endl;
+  else
+    sd_ratio_rd = (sd_ratio_rd < 0)? -platoon_sd_ratio: platoon_sd_ratio;
+  report4 << sd_ratio_rd << " #_Platoon_within/between_stdev_ratio (no read if N_platoons=1)" << endl;
+  report4 << "#_Cond sd_ratio_rd < 0: platoon_sd_ratio parameter required after movement params." << endl;
   if (N_platoon == 1)
     report4 << "#_Cond ";
   report4 << platoon_distr(1, N_platoon) << " #vector_platoon_dist_(-1_in_first_val_gives_normal_approx)" << endl;
@@ -1946,6 +1942,14 @@ FUNCTION void write_nucontrol()
     }
   }
 
+  report4 << "#  Platoon StDev Ratio " << endl;
+  if (N_platoon > 1 && sd_ratio_rd < 0)
+  {
+    NP++;
+    MGparm_1(NP, 3) = value(MGparm(NP));
+    report4 << MGparm_1(NP) << " # " << ParmLabel(NP) << endl;
+  }
+  
   report4 << "#  Age Error from parameters" << endl;
   if (Use_AgeKeyZero > 0)
   {
