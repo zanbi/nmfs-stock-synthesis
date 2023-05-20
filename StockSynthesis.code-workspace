@@ -10,7 +10,8 @@
 			"\"*.extension\":": "\"tpl\"",
 			"*.htp": "c",
 			"ostream": "c",
-			"xlocale": "c"
+			"xlocale": "c",
+			"cmath": "c"
 		},
 		"explorer.excludeGitIgnore": true
 	}
